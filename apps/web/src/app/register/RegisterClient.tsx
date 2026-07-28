@@ -1,0 +1,134 @@
+"use client";
+
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { apiGet, apiSend, type Course } from "@/lib/api";
+import { firebaseEnabled, getIdToken, registerEmail, setDevSession } from "@/lib/firebase";
+
+export default function RegisterClient() {
+  const params = useSearchParams();
+  const presetCourse = params.get("course") || "";
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    apiGet<Course[]>("/courses")
+      .then(setCourses)
+      .catch(() => setCourses([]));
+  }, []);
+
+  const grouped = useMemo(() => courses, [courses]);
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setStatus(null);
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") || "");
+    const password = String(fd.get("password") || "");
+    const fullName = String(fd.get("full_name") || "");
+    const courseId = String(fd.get("course_id") || "");
+    const deliveryMode = String(fd.get("delivery_mode") || "physical");
+    const ack = fd.get("acknowledge_in_person") === "on";
+
+    try {
+      let token = await getIdToken();
+      if (firebaseEnabled) {
+        await registerEmail(email, password);
+        token = await getIdToken();
+      } else {
+        setDevSession("student");
+        token = await getIdToken();
+      }
+      if (!token) throw new Error("Could not create auth session");
+
+      await apiSend(
+        "/auth/register",
+        "POST",
+        {
+          full_name: fullName,
+          course_id: courseId,
+          delivery_mode: deliveryMode,
+          acknowledge_in_person: ack,
+        },
+        token,
+      );
+
+      setStatus("Registration complete.");
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="section">
+      <div className="container-page" style={{ maxWidth: 720 }}>
+        <h2>Self-registration</h2>
+        <p className="lead">Create your account, choose a language and level, and reserve your place.</p>
+        <div className="notice">
+          <strong>Compulsory in-person attendance:</strong> All St. Clare language programmes require physical class
+          attendance, even when online materials are available.
+        </div>
+        <form className="panel" onSubmit={onSubmit}>
+          <div className="field">
+            <label htmlFor="full_name">Full name</label>
+            <input id="full_name" name="full_name" required />
+          </div>
+          <div className="field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              defaultValue={firebaseEnabled ? "" : "student@stclare.local"}
+            />
+          </div>
+          {firebaseEnabled && (
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <input id="password" name="password" type="password" minLength={6} required />
+            </div>
+          )}
+          {!firebaseEnabled && (
+            <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+              Firebase is not configured — demo mode signs you in as the seeded student account.
+            </p>
+          )}
+          <div className="field">
+            <label htmlFor="course_id">Course & level</label>
+            <select id="course_id" name="course_id" required defaultValue={presetCourse}>
+              <option value="" disabled>
+                Select a course
+              </option>
+              {grouped.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="delivery_mode">Preferred delivery mode</label>
+            <select id="delivery_mode" name="delivery_mode" defaultValue="physical">
+              <option value="physical">Physical classes</option>
+              <option value="online">Online component (in-person still compulsory)</option>
+            </select>
+          </div>
+          <label style={{ display: "flex", gap: "0.6rem", alignItems: "flex-start", marginBottom: "1rem" }}>
+            <input name="acknowledge_in_person" type="checkbox" required defaultChecked />
+            <span>I understand that in-person attendance is compulsory for all language programmes.</span>
+          </label>
+          <button className="btn btn-primary" disabled={loading} type="submit">
+            {loading ? "Submitting…" : "Create account & enrol"}
+          </button>
+          {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
+        </form>
+      </div>
+    </section>
+  );
+}
