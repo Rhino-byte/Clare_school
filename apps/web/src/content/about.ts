@@ -6,9 +6,9 @@ export const aboutContact = {
 
 export const aboutContent = {
   brand: "St. Clare Language Institute",
-  // parentLine: "A branch of  St. Clare Vocational College — Nakuru",
+  parentLine: "",//"A branch of St. Clare Vocational College Nairobi",
   tagline: "Building Skills. Shaping Futures.",
-  heroEyebrow: "About St. Clare · Nairobi",
+  heroEyebrow: "Nairobi Branch",
   heroHeadline: "Learn languages. Unlock global opportunities.",
   heroSupport:
     "Professional German, French, and English training for education, employment, migration, and international communication.",

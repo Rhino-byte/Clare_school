@@ -15,9 +15,9 @@ import { aboutContact, aboutContent } from "@/content/about";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "St. Clare Language Institute — Nairobi. Professional German, French, and English training for education, employment, migration, and international communication.",
+    "St. Clare Language Institute Nairobi Branch offers Professional German, French, and English training for education, employment, migration, and international communication.",
   openGraph: {
-    title: "About St. Clare Language Institute",
+    title: "St. Clare Language Institute",
     description: aboutContent.heroSupport,
   },
 };

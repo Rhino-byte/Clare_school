@@ -11,7 +11,8 @@ export default function ContactPage() {
     e.preventDefault();
     setLoading(true);
     setStatus(null);
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     try {
       const res = await apiSend<{ message: string }>("/contact", "POST", {
         name: fd.get("name"),
@@ -20,7 +21,7 @@ export default function ContactPage() {
         message: fd.get("message"),
       });
       setStatus(res.message);
-      e.currentTarget.reset();
+      form.reset();
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Could not send inquiry");
     } finally {

@@ -72,7 +72,7 @@ export function SiteHeader() {
             <strong style={{ display: "block", fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: "1.15rem" }}>
               St. Clare
             </strong>
-            <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>Language Institute · Nairobi</span>
+            <span style={{ fontSize: "0.75rem", opacity: 0.8 }}> </span>
           </span>
         </Link>
         <nav style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>

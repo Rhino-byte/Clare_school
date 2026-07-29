@@ -40,9 +40,10 @@ export default function TeacherTestsPage() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const token = await getIdToken();
     if (!token) return;
-    const fd = new FormData(e.currentTarget);
     const payload = {
       course_id: String(fd.get("course_id")),
       title: String(fd.get("title")),
@@ -52,7 +53,7 @@ export default function TeacherTestsPage() {
     };
     await apiSend("/tests", "POST", payload, token);
     setMessage("Test created.");
-    e.currentTarget.reset();
+    form.reset();
     await refresh();
   }
 

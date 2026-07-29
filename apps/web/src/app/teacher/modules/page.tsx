@@ -32,9 +32,10 @@ export default function TeacherModulesPage() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const token = await getIdToken();
     if (!token) return;
-    const fd = new FormData(e.currentTarget);
     const file = fd.get("media") as File | null;
     const content: Array<Record<string, unknown>> = [
       { type: "text", body: String(fd.get("body") || "") },
@@ -59,7 +60,7 @@ export default function TeacherModulesPage() {
       setMessage("Module created.");
     }
     setEditing(null);
-    e.currentTarget.reset();
+    form.reset();
     await refresh();
   }
 
