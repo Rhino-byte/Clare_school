@@ -4,6 +4,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiGet, type Course, type Module, type User } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
+import {
+  AppList,
+  AppListItem,
+  AppPageHeader,
+  AppPanel,
+  AppShell,
+  EmptyState,
+  StatusChip,
+} from "@/components/app/AppShell";
 
 type Progress = {
   id: string;
@@ -18,7 +27,20 @@ type Result = {
   status: string;
   score: number | null;
   max_score: number | null;
+  speaking?: Array<{
+    answer_id: string;
+    pronunciation_score: number | null;
+    assessment_status: string;
+    transcript?: string | null;
+  }>;
 };
+
+function toneForStatus(status: string): "neutral" | "ok" | "warn" | "bad" {
+  if (status === "completed" || status === "graded" || status === "passed") return "ok";
+  if (status === "assessing" || status === "in_progress" || status === "needs_review") return "warn";
+  if (status === "failed" || status === "error") return "bad";
+  return "neutral";
+}
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -61,116 +83,140 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <section className="section">
-        <div className="container-page">
-          <div className="notice">{error}</div>
-          <Link href="/login">Go to login</Link>
-        </div>
-      </section>
+      <AppShell>
+        <div className="notice">{error}</div>
+        <Link href="/login">Go to login</Link>
+      </AppShell>
     );
   }
 
   if (!user) {
     return (
-      <section className="section">
-        <div className="container-page">Loading dashboard…</div>
-      </section>
+      <AppShell>
+        <div className="skeleton" style={{ height: 28, maxWidth: 280, marginBottom: "1rem" }} />
+        <div className="skeleton" style={{ height: 120 }} />
+      </AppShell>
     );
   }
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <h2>Welcome, {user.full_name || user.email}</h2>
-        <p className="lead">
-          Role: <span className="level-badge">{user.role}</span>
-        </p>
+    <AppShell>
+      <AppPageHeader
+        eyebrow="Learning portal"
+        title={`Welcome, ${user.full_name || user.email}`}
+        lead={`Signed in as ${user.role}`}
+      />
+      <p style={{ marginTop: "-0.75rem" }}>
+        <StatusChip>{user.role}</StatusChip>
+      </p>
 
-        {user.role === "student" && (
-          <div style={{ display: "grid", gap: "1.5rem" }}>
-            <div className="panel">
-              <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Your enrolments</h3>
-              {courses.length === 0 ? (
-                <p>
-                  No courses yet. <Link href="/register">Enrol now</Link>
-                </p>
-              ) : (
-                <ul>
-                  {courses.map((c) => (
-                    <li key={c.id}>
-                      {c.title} <span className={`level-badge ${c.language}`}>{c.level}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="panel">
-              <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Assigned modules</h3>
-              <div style={{ display: "grid", gap: "0.75rem" }}>
-                {modules.map((m) => {
-                  const p = progress.find((x) => x.module_id === m.id);
-                  return (
-                    <div key={m.id} style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+      {user.role === "student" && (
+        <div style={{ display: "grid", gap: "1.5rem" }}>
+          <AppPanel>
+            <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Your enrolments</h3>
+            {courses.length === 0 ? (
+              <EmptyState>
+                No courses yet. <Link href="/register">Enrol now</Link>
+              </EmptyState>
+            ) : (
+              <ul>
+                {courses.map((c) => (
+                  <li key={c.id}>
+                    {c.title} <span className={`level-badge ${c.language}`}>{c.level}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </AppPanel>
+
+          <AppPanel>
+            <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Assigned modules</h3>
+            <AppList>
+              {modules.map((m) => {
+                const p = progress.find((x) => x.module_id === m.id);
+                return (
+                  <AppListItem key={m.id}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
                       <div>
                         <strong>{m.title}</strong>
                         <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{m.summary}</div>
                       </div>
                       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                        <span className="level-badge">{p?.status || "not_started"}</span>
+                        <StatusChip tone={toneForStatus(p?.status || "not_started")}>
+                          {p?.status || "not_started"}
+                        </StatusChip>
                         <Link href={`/learn/${m.id}`} className="btn btn-navy" style={{ padding: "0.4rem 0.9rem" }}>
                           Open
                         </Link>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="panel">
-              <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Test results</h3>
-              {results.length === 0 ? (
-                <p style={{ color: "var(--muted)" }}>No submissions yet.</p>
-              ) : (
-                <ul>
-                  {results.map((r) => (
-                    <li key={r.submission_id}>
-                      {r.test_title}: {r.status}
-                      {r.score != null ? ` — ${r.score}/${r.max_score}` : ""}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Link href="/tests">Browse available tests →</Link>
-            </div>
-          </div>
-        )}
+                  </AppListItem>
+                );
+              })}
+            </AppList>
+            {modules.length === 0 && <EmptyState>No modules assigned yet.</EmptyState>}
+          </AppPanel>
 
-        {(user.role === "teacher" || user.role === "admin") && (
-          <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
-            <Link href="/teacher/modules" className="panel" style={{ fontWeight: 700, color: "var(--navy)" }}>
-              Manage modules
-            </Link>
-            <Link href="/teacher/tests" className="panel" style={{ fontWeight: 700, color: "var(--navy)" }}>
-              Manage tests
-            </Link>
-            <Link href="/teacher/grading" className="panel" style={{ fontWeight: 700, color: "var(--navy)" }}>
-              Grading queue
-            </Link>
-            <Link href="/teacher/gradebook" className="panel" style={{ fontWeight: 700, color: "var(--navy)" }}>
-              Gradebook
-            </Link>
-            {user.role === "admin" && (
-              <Link href="/admin" className="panel" style={{ fontWeight: 700, color: "var(--navy)" }}>
-                Admin console
-              </Link>
+          <AppPanel>
+            <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Test results</h3>
+            {results.length === 0 ? (
+              <EmptyState>No submissions yet.</EmptyState>
+            ) : (
+              <ul>
+                {results.map((r) => (
+                  <li key={r.submission_id} style={{ marginBottom: "0.75rem" }}>
+                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+                      <strong>{r.test_title}</strong>
+                      <StatusChip tone={toneForStatus(r.status)}>{r.status}</StatusChip>
+                      {r.score != null ? (
+                        <span style={{ color: "var(--muted)" }}>
+                          {r.score}/{r.max_score}
+                        </span>
+                      ) : null}
+                    </div>
+                    {r.speaking && r.speaking.length > 0 && (
+                      <ul style={{ marginTop: "0.35rem" }}>
+                        {r.speaking.map((s) => (
+                          <li key={s.answer_id} style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+                            Speaking: <StatusChip tone={toneForStatus(s.assessment_status)}>{s.assessment_status}</StatusChip>
+                            {s.pronunciation_score != null ? `: ${s.pronunciation_score}/100` : ""}
+                            {s.transcript
+                              ? ` (“${s.transcript.slice(0, 80)}${s.transcript.length > 80 ? "…" : ""}”)`
+                              : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
-            <div className="panel">
-              <h3 style={{ marginTop: 0 }}>Your content</h3>
-              <p style={{ margin: 0, color: "var(--muted)" }}>{modules.length} modules visible</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
+            <Link href="/tests">Browse available tests →</Link>
+          </AppPanel>
+        </div>
+      )}
+
+      {(user.role === "teacher" || user.role === "admin") && (
+        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
+          {[
+            { href: "/teacher/modules", label: "Manage modules" },
+            { href: "/teacher/tests", label: "Manage tests" },
+            { href: "/teacher/grading", label: "Grading queue" },
+            { href: "/teacher/gradebook", label: "Gradebook" },
+            ...(user.role === "admin" ? [{ href: "/admin", label: "Admin console" }] : []),
+          ].map((item) => (
+            <AppPanel key={item.href}>
+              <Link href={item.href} style={{ fontWeight: 700, color: "var(--navy)", display: "block" }}>
+                {item.label}
+              </Link>
+            </AppPanel>
+          ))}
+          <AppPanel>
+            <h3 style={{ marginTop: 0 }}>Your content</h3>
+            <p style={{ margin: 0, color: "var(--muted)" }}>{modules.length} modules visible</p>
+          </AppPanel>
+        </div>
+      )}
+    </AppShell>
   );
 }

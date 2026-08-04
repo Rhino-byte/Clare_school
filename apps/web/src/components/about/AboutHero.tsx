@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { aboutContent } from "@/content/about";
+import { PhotoHero } from "@/components/motion";
 
 const LANGUAGES = ["German", "French", "English"] as const;
 
@@ -10,7 +12,6 @@ function CrestMark({ size = 56 }: { size?: number }) {
   return (
     <span
       aria-hidden
-      className="about-crest about-crest-live"
       style={{
         width: size,
         height: Math.round(size * 1.14),
@@ -33,69 +34,65 @@ function CrestMark({ size = 56 }: { size?: number }) {
 export function AboutHero() {
   const c = aboutContent;
   const [langIndex, setLangIndex] = useState(0);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mq.matches);
-    const onChange = () => setReduceMotion(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  useEffect(() => {
-    if (reduceMotion) return;
+    if (reduce) return;
     const id = window.setInterval(() => {
       setLangIndex((i) => (i + 1) % LANGUAGES.length);
     }, 2600);
     return () => window.clearInterval(id);
-  }, [reduceMotion]);
+  }, [reduce]);
 
   return (
-    <section className="about-hero about-hero-live">
-      <div className="about-hero-glow about-hero-glow-a" aria-hidden />
-      <div className="about-hero-glow about-hero-glow-b" aria-hidden />
-      <div className="about-hero-stripes" aria-hidden />
-
-      <div className="container-page about-hero-inner">
-        <div className="animate-rise about-hero-brand">
-          <CrestMark />
-          <div>
-            <p className="about-hero-eyebrow">{c.heroEyebrow}</p>
-            <strong className="about-hero-brand-name">{c.brand}</strong>
-          </div>
-        </div>
-
-        <h1 className="animate-rise-delay about-hero-headline">{c.heroHeadline}</h1>
-
-        <p className="animate-rise-delay-2 about-hero-support">
+    <PhotoHero
+      imageSrc="/images/hero-about.jpg"
+      imageAlt="St. Clare campus community in Nairobi"
+      brand={c.heroEyebrow}
+      headline={c.heroHeadline}
+      headlineWide
+      priority
+      support={
+        <p className="photo-hero-support">
           Professional{" "}
-          <span className="about-lang-live" aria-live="polite">
-            {LANGUAGES.map((lang, i) => (
-              <span
-                key={lang}
-                className={i === langIndex ? "is-active" : ""}
-                aria-hidden={i !== langIndex}
-              >
-                {lang}
-              </span>
-            ))}
-          </span>
-          {" "}
-          training for education, employment, migration, and international communication.
+          <span style={{ color: "#e6c65c", fontWeight: 700 }}>{LANGUAGES[langIndex]}</span> training for education,
+          employment, migration, and international communication.
         </p>
-
-        <div className="animate-rise-delay-2 about-hero-actions">
-          <Link href="/register" className="btn btn-primary about-cta-pulse">
+      }
+      actions={
+        <>
+          <Link href="/register" className="btn btn-primary">
             Start enrolment
           </Link>
-          <Link href="/courses" className="btn btn-secondary about-btn-ghost">
+          <Link href="/courses" className="btn btn-secondary">
             Explore courses
           </Link>
+        </>
+      }
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.85rem",
+          marginTop: "1.5rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <CrestMark />
+        <div>
+          <strong
+            style={{
+              display: "block",
+              fontFamily: "var(--font-fraunces), Georgia, serif",
+              fontSize: "1.15rem",
+            }}
+          >
+            {c.brand}
+          </strong>
+          <span style={{ opacity: 0.8, fontStyle: "italic" }}>{c.tagline}</span>
         </div>
-
-        <p className="about-hero-tagline">{c.tagline}</p>
       </div>
-    </section>
+    </PhotoHero>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { apiGet, apiSend, type User } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
+import { AppPageHeader, AppPanel, AppShell, StatusChip } from "@/components/app/AppShell";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -42,33 +42,38 @@ export default function AdminPage() {
   }
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <Link href="/dashboard">← Dashboard</Link>
-        <h2>Admin console</h2>
-        <p className="lead">Manage accounts and public marketing content without code.</p>
-        {message && <div className="notice">{message}</div>}
+    <AppShell>
+      <AppPageHeader
+        backHref="/dashboard"
+        title="Admin console"
+        lead="Manage accounts and public marketing content without code."
+      />
+      {message && <div className="notice">{message}</div>}
 
-        <div className="panel" style={{ marginBottom: "1.5rem" }}>
-          <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Users</h3>
-          <div style={{ display: "grid", gap: "0.75rem" }}>
-            {users.map((u) => (
-              <div key={u.id} style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
-                <div>
-                  <strong>{u.full_name || u.email}</strong>
-                  <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{u.email}</div>
-                </div>
+      <AppPanel style={{ marginBottom: "1.5rem" }}>
+        <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Users</h3>
+        <div style={{ display: "grid", gap: "0.75rem" }}>
+          {users.map((u) => (
+            <div key={u.id} style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+              <div>
+                <strong>{u.full_name || u.email}</strong>
+                <div style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{u.email}</div>
+              </div>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <StatusChip>{u.role}</StatusChip>
                 <select value={u.role} onChange={(e) => setRole(u.id, e.target.value)}>
                   <option value="student">student</option>
                   <option value="teacher">teacher</option>
                   <option value="admin">admin</option>
                 </select>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
+      </AppPanel>
 
-        <form className="panel" onSubmit={saveMarketing}>
+      <AppPanel>
+        <form onSubmit={saveMarketing}>
           <h3 style={{ marginTop: 0, color: "var(--navy)" }}>Edit marketing page</h3>
           <div className="field">
             <label>Slug</label>
@@ -90,7 +95,7 @@ export default function AdminPage() {
             Save page
           </button>
         </form>
-      </div>
-    </section>
+      </AppPanel>
+    </AppShell>
   );
 }

@@ -37,6 +37,8 @@ export type Question = {
   prompt: string;
   options: string[];
   audio_prompt_key: string | null;
+  pass_threshold?: number;
+  max_attempts?: number;
   points: number;
   order_index: number;
 };
@@ -49,6 +51,21 @@ export type Test = {
   instructions: string;
   status: string;
   questions: Question[];
+};
+
+export type Assessment = {
+  answer_id: string;
+  assessment_status: "pending" | "processing" | "scored" | "failed" | "overridden";
+  transcript: string | null;
+  pronunciation_score: number | null;
+  score_breakdown: Record<string, unknown>;
+  expected_text: string | null;
+  assessment_error: string | null;
+  needs_review: boolean;
+  points_awarded: number | null;
+  teacher_feedback: string | null;
+  attempts_used: number;
+  max_attempts: number;
 };
 
 function authHeader(token?: string | null): HeadersInit {

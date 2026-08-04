@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { apiGet, apiSend, type Course, type Test } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
 import { uploadBlob } from "@/lib/media";
+import { AppPageHeader, AppShell } from "@/components/app/AppShell";
 
 type DraftQuestion = {
   question_type: "mcq" | "true_false" | "short_answer" | "audio_response";
@@ -12,6 +12,8 @@ type DraftQuestion = {
   options: string[];
   correct_answer: string;
   audio_prompt_key?: string | null;
+  pass_threshold: number;
+  max_attempts: number;
   points: number;
   order_index: number;
 };
@@ -20,7 +22,16 @@ export default function TeacherTestsPage() {
   const [tests, setTests] = useState<Test[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [questions, setQuestions] = useState<DraftQuestion[]>([
-    { question_type: "mcq", prompt: "", options: ["A", "B", "C", "D"], correct_answer: "A", points: 1, order_index: 0 },
+    {
+      question_type: "mcq",
+      prompt: "",
+      options: ["A", "B", "C", "D"],
+      correct_answer: "A",
+      pass_threshold: 70,
+      max_attempts: 3,
+      points: 1,
+      order_index: 0,
+    },
   ]);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -44,17 +55,29 @@ export default function TeacherTestsPage() {
     const fd = new FormData(form);
     const token = await getIdToken();
     if (!token) return;
-    const payload = {
-      course_id: String(fd.get("course_id")),
-      title: String(fd.get("title")),
-      instructions: String(fd.get("instructions")),
-      status: String(fd.get("status")),
-      questions,
-    };
-    await apiSend("/tests", "POST", payload, token);
-    setMessage("Test created.");
-    form.reset();
-    await refresh();
+
+    for (const q of questions) {
+      if (q.question_type === "audio_response" && !q.correct_answer.trim()) {
+        setMessage("Speaking questions need an expected phrase for Whisper scoring.");
+        return;
+      }
+    }
+
+    try {
+      const payload = {
+        course_id: String(fd.get("course_id")),
+        title: String(fd.get("title")),
+        instructions: String(fd.get("instructions")),
+        status: String(fd.get("status")),
+        questions,
+      };
+      await apiSend("/tests", "POST", payload, token);
+      setMessage("Test created.");
+      form.reset();
+      await refresh();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Could not create test");
+    }
   }
 
   function updateQuestion(i: number, patch: Partial<DraftQuestion>) {
@@ -68,11 +91,12 @@ export default function TeacherTestsPage() {
   }
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <Link href="/dashboard">← Dashboard</Link>
-        <h2>Teacher tests</h2>
-        <p className="lead">Build assessments with multiple choice, true/false, short answer, and audio response.</p>
+    <AppShell>
+      <AppPageHeader
+        backHref="/dashboard"
+        title="Teacher tests"
+        lead="Build assessments with multiple choice, true/false, short answer, and speaking (Whisper-scored audio)."
+      />
         {message && <div className="notice">{message}</div>}
 
         <form className="panel" onSubmit={onSubmit} style={{ marginBottom: "2rem" }}>
@@ -116,7 +140,7 @@ export default function TeacherTestsPage() {
                   <option value="mcq">Multiple choice</option>
                   <option value="true_false">True / False</option>
                   <option value="short_answer">Short answer</option>
-                  <option value="audio_response">Audio response</option>
+                  <option value="audio_response">Audio response (speaking)</option>
                 </select>
               </div>
               <div className="field">
@@ -143,11 +167,42 @@ export default function TeacherTestsPage() {
                 </>
               )}
               {q.question_type === "audio_response" && (
-                <div className="field">
-                  <label>Optional audio prompt upload</label>
-                  <input type="file" accept="audio/*" onChange={(e) => attachAudioPrompt(i, e.target.files?.[0] || null)} />
-                  {q.audio_prompt_key && <small>Uploaded: {q.audio_prompt_key}</small>}
-                </div>
+                <>
+                  <div className="field">
+                    <label>Expected phrase (required for Whisper scoring)</label>
+                    <textarea
+                      value={q.correct_answer}
+                      onChange={(e) => updateQuestion(i, { correct_answer: e.target.value })}
+                      required
+                      placeholder="Exact words the student should say"
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Pass threshold (0–100)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={q.pass_threshold}
+                      onChange={(e) => updateQuestion(i, { pass_threshold: Number(e.target.value) || 70 })}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Max attempts</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={q.max_attempts}
+                      onChange={(e) => updateQuestion(i, { max_attempts: Number(e.target.value) || 3 })}
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Optional audio prompt upload</label>
+                    <input type="file" accept="audio/*" onChange={(e) => attachAudioPrompt(i, e.target.files?.[0] || null)} />
+                    {q.audio_prompt_key && <small>Uploaded: {q.audio_prompt_key}</small>}
+                  </div>
+                </>
               )}
             </div>
           ))}
@@ -164,6 +219,8 @@ export default function TeacherTestsPage() {
                     prompt: "",
                     options: [],
                     correct_answer: "",
+                    pass_threshold: 70,
+                    max_attempts: 3,
                     points: 1,
                     order_index: prev.length,
                   },
@@ -186,7 +243,6 @@ export default function TeacherTestsPage() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
+    </AppShell>
   );
 }

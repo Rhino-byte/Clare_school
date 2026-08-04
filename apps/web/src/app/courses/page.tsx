@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { API_URL, languageLabel, type Course } from "@/lib/api";
+import { MarketingIntro, RevealItem, RevealList } from "@/components/marketing/MarketingIntro";
+import { matchCurriculumLevel } from "@/content/curriculum";
 
 export const metadata: Metadata = { title: "Courses" };
 
@@ -23,38 +25,64 @@ export default async function CoursesPage() {
   }, {});
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <h2>Course catalogue</h2>
-        <p className="lead">
-          Choose German, French, or English — each structured by proficiency level. Delivery may include online components,
-          but in-person attendance is compulsory.
-        </p>
-        {Object.keys(byLang).length === 0 && (
-          <div className="notice">Start the API to load live catalogue data. Seeded courses appear once `/api/courses` is reachable.</div>
-        )}
-        <div style={{ display: "grid", gap: "2rem" }}>
-          {Object.entries(byLang).map(([lang, list]) => (
-            <div key={lang}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "1rem" }}>
-                <h3 style={{ margin: 0, color: "var(--navy)", fontFamily: "var(--font-fraunces), Georgia, serif", fontSize: "1.6rem" }}>
-                  {languageLabel(lang)}
-                </h3>
-                <Link href={`/courses/${lang}`} style={{ color: "var(--navy)", fontWeight: 700 }}>
-                  View pathway →
-                </Link>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                {list.map((c) => (
-                  <span key={c.id} className={`level-badge ${lang}`}>
-                    {c.level}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+    <MarketingIntro
+      title="Course catalogue"
+      lead="Browse by language, open a level to learn what’s taught, then continue to the full pathway or enrol."
+      imageSrc="/images/band-languages.jpg"
+      imageAlt="Language immersion study materials"
+    >
+      {Object.keys(byLang).length === 0 && (
+        <div className="notice">
+          Start the API to load live catalogue data. Seeded courses appear once `/api/courses` is reachable.
         </div>
-      </div>
-    </section>
+      )}
+      <RevealList style={{ display: "grid", gap: "2.25rem" }}>
+        {Object.entries(byLang).map(([lang, list]) => (
+          <RevealItem key={lang}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "1rem",
+                marginBottom: "1rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                  color: "var(--navy)",
+                  fontFamily: "var(--font-fraunces), Georgia, serif",
+                  fontSize: "1.6rem",
+                }}
+              >
+                {languageLabel(lang)}
+              </h3>
+              <Link href={`/courses/${lang}`} style={{ color: "var(--navy)", fontWeight: 700 }}>
+                View pathway →
+              </Link>
+            </div>
+            <div className="course-level-grid">
+              {list.map((c) => {
+                const cur = matchCurriculumLevel(lang, c.level);
+                return (
+                  <Link
+                    key={c.id}
+                    href={`/levels?lang=${lang}&level=${encodeURIComponent(c.level)}`}
+                    className="course-level-card"
+                  >
+                    <span className={`level-badge ${lang}`}>{c.level}</span>
+                    <h4>{cur?.headline ?? c.title}</h4>
+                    <p>{cur?.summary ?? c.description}</p>
+                    <span className="course-level-cta">What’s in this level →</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </RevealItem>
+        ))}
+      </RevealList>
+    </MarketingIntro>
   );
 }

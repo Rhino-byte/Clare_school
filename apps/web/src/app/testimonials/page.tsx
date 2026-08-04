@@ -1,30 +1,45 @@
 import type { Metadata } from "next";
-import { API_URL } from "@/lib/api";
+import Link from "next/link";
+import { MarketingIntro, RevealItem, RevealList } from "@/components/marketing/MarketingIntro";
+import { LEARNER_STORIES } from "@/content/stories";
 
-export const metadata: Metadata = { title: "Testimonials" };
+export const metadata: Metadata = { title: "Learner stories" };
 
-export default async function TestimonialsPage() {
-  let body =
-    '"The speaking practice prepared me for real conversations abroad." — Alumni, German B1';
-  try {
-    const res = await fetch(`${API_URL}/api/marketing/testimonials`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      const data = await res.json();
-      body = data.body_md;
-    }
-  } catch {
-    /* fallback */
-  }
-
+export default function TestimonialsPage() {
   return (
-    <section className="section">
-      <div className="container-page">
-        <h2>Learner stories</h2>
-        <p className="lead">Outcomes that matter — confidence in speaking, exam readiness, and career mobility.</p>
-        <div className="panel" style={{ whiteSpace: "pre-wrap", lineHeight: 1.8, fontSize: "1.05rem" }}>
-          {body}
-        </div>
-      </div>
-    </section>
+    <MarketingIntro
+      title="Learner stories"
+      lead="Read how learners used these programmes, then follow a story into the matching level if you want the same path."
+      imageSrc="/images/band-stories.jpg"
+      imageAlt="St. Clare learners celebrating progress"
+    >
+      <RevealList className="story-grid">
+        {LEARNER_STORIES.map((s) => (
+          <RevealItem key={s.id}>
+            <article className="story-card">
+              <span className="story-outcome-tag">{s.outcomeTag}</span>
+              <blockquote className="story-card-quote">&ldquo;{s.quote}&rdquo;</blockquote>
+              <div className="story-card-meta">
+                <span className="story-avatar" aria-hidden>
+                  {s.initials}
+                </span>
+                <div>
+                  <strong>{s.displayName}</strong>
+                  <span>
+                    {s.role} · {s.track} {s.level}
+                  </span>
+                </div>
+              </div>
+              <Link
+                href={`/levels?lang=${s.language}&level=${encodeURIComponent(s.level)}`}
+                style={{ color: "var(--navy)", fontWeight: 700, fontSize: "0.9rem" }}
+              >
+                Explore this level →
+              </Link>
+            </article>
+          </RevealItem>
+        ))}
+      </RevealList>
+    </MarketingIntro>
   );
 }

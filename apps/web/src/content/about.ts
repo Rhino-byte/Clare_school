@@ -17,10 +17,10 @@ export const aboutContent = {
   storyLead:
     "St. Clare Language Institute exists to give learners in Nairobi a clear path from language study to real-world mobility.",
   storyBody:
-    "As part of St. Clare Vocational College, we deliver structured programmes in German, French, and English. Our focus is practical fluency and recognised progression — whether your goal is further study, a stronger CV, international employment, or confident communication across borders.",
+    "As part of St. Clare Vocational College, we deliver structured programmes in German, French, and English. Our focus is practical fluency and recognised progression, whether your goal is further study, a stronger CV, international employment, or confident communication across borders.",
 
   differentiatorsTitle: "What makes us different",
-  differentiatorsLead: "More than education — we prepare you for your future.",
+  differentiatorsLead: "More than education: we prepare you for your future.",
   differentiators: [
     {
       title: "Career guidance & placement",
@@ -47,10 +47,10 @@ export const aboutContent = {
 
   missionTitle: "Our mission",
   missionBody:
-    "To develop language talent Kenya and the region need — equipping learners with professional German, French, and English for global education and careers.",
+    "To develop language talent Kenya and the region need, equipping learners with professional German, French, and English for global education and careers.",
   visionTitle: "Our vision",
   visionBody:
-    "A community of learners who can create their future through language — opening doors to study, employment, migration, and confident international communication.",
+    "A community of learners who can create their future through language, opening doors to study, employment, migration, and confident international communication.",
 
   pillarsTitle: "Our pillars",
   pillarsLead: "Four commitments guide every programme we deliver.",

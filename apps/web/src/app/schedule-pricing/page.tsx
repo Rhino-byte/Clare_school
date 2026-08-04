@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { API_URL } from "@/lib/api";
+import { MarketingIntro } from "@/components/marketing/MarketingIntro";
+import { RiseIn } from "@/components/motion";
 
 export const metadata: Metadata = { title: "Schedule & Pricing" };
 
@@ -19,17 +21,21 @@ export default async function SchedulePage() {
   }
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <h2>{title}</h2>
-        <p className="lead">Plan your studies around physical classes in Nairobi, with optional online support materials.</p>
+    <MarketingIntro
+      title={title}
+      lead="Plan your studies around physical classes in Nairobi, with optional online support materials."
+      imageSrc="/images/hero-about.jpg"
+      imageAlt="St. Clare campus in Nairobi"
+    >
+      <RiseIn>
         <div className="panel" style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
           {body}
         </div>
         <div className="notice" style={{ marginTop: "1.25rem" }}>
-          Payment processing is not available on this site in v1. Registration reserves your place; tuition is arranged with staff offline.
+          Payment processing is not available on this site in v1. Registration reserves your place; tuition is arranged with
+          staff offline.
         </div>
-      </div>
-    </section>
+      </RiseIn>
+    </MarketingIntro>
   );
 }

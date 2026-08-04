@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { apiSend } from "@/lib/api";
+import { MarketingIntro } from "@/components/marketing/MarketingIntro";
+import { RiseIn } from "@/components/motion";
 
 export default function ContactPage() {
   const [status, setStatus] = useState<string | null>(null);
@@ -30,11 +32,14 @@ export default function ContactPage() {
   }
 
   return (
-    <section className="section">
-      <div className="container-page" style={{ maxWidth: 720 }}>
-        <h2>Contact & inquiry</h2>
-        <p className="lead">Ask about courses, schedules, or enrolment. Messages are routed to admissions staff.</p>
-        <form className="panel" onSubmit={onSubmit}>
+    <MarketingIntro
+      title="Contact & inquiry"
+      lead="Ask about courses, schedules, or enrolment. Messages are routed to admissions staff."
+      imageSrc="/images/hero-about.jpg"
+      imageAlt="St. Clare community campus"
+    >
+      <RiseIn>
+        <form className="panel" onSubmit={onSubmit} style={{ maxWidth: 640 }}>
           <div className="field">
             <label htmlFor="name">Full name</label>
             <input id="name" name="name" required />
@@ -56,7 +61,7 @@ export default function ContactPage() {
           </button>
           {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
         </form>
-      </div>
-    </section>
+      </RiseIn>
+    </MarketingIntro>
   );
 }

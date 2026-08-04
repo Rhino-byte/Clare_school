@@ -1,40 +1,34 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { MarketingIntro } from "@/components/marketing/MarketingIntro";
+import { LevelExplorer } from "@/components/marketing/LevelExplorer";
+import { API_URL, type Course } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Levels & Curriculum" };
 
-export default function LevelsPage() {
+async function getCourses(): Promise<Course[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/courses`, { next: { revalidate: 30 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function LevelsPage() {
+  const courses = await getCourses();
+
   return (
-    <section className="section">
-      <div className="container-page">
-        <h2>Levels & curriculum</h2>
-        <p className="lead">Clear pathways so learners know where they start and what they are working toward.</p>
-        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
-          <div className="panel">
-            <h3 style={{ color: "var(--navy)", marginTop: 0 }}>German & French</h3>
-            <p style={{ color: "var(--muted)" }}>CEFR-aligned levels A1, A2, B1, and B2 with speaking, listening, reading, and writing practice.</p>
-            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-              {["A1", "A2", "B1", "B2"].map((l) => (
-                <span key={l} className="level-badge french">
-                  {l}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="panel">
-            <h3 style={{ color: "var(--navy)", marginTop: 0 }}>English</h3>
-            <p style={{ color: "var(--muted)" }}>
-              Beginner through Advanced, plus IELTS Preparation and Business English for study and workplace goals.
-            </p>
-            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-              {["Beginner", "Elementary", "Intermediate", "Advanced", "IELTS", "Business"].map((l) => (
-                <span key={l} className="level-badge english">
-                  {l}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <MarketingIntro
+      title="Levels & curriculum"
+      lead="Not sure where you fit? Pick a language, open a level that matches your goal, then enrol or ask admissions to confirm placement."
+      imageSrc="/images/band-languages.jpg"
+      imageAlt="Structured language learning pathway"
+    >
+      <Suspense fallback={<div className="skeleton" style={{ height: 220 }} />}>
+        <LevelExplorer courses={courses} />
+      </Suspense>
+    </MarketingIntro>
   );
 }

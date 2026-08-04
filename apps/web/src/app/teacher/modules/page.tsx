@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { apiGet, apiSend, type Course, type Module } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
 import { uploadBlob } from "@/lib/media";
+import { AppPageHeader, AppShell } from "@/components/app/AppShell";
 
 export default function TeacherModulesPage() {
   const [modules, setModules] = useState<Module[]>([]);
@@ -79,11 +79,12 @@ export default function TeacherModulesPage() {
   }
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <Link href="/dashboard">← Dashboard</Link>
-        <h2>Teacher modules</h2>
-        <p className="lead">Create, edit, publish, and duplicate learning modules. Media uploads go to Cloudflare R2 (or local fallback).</p>
+    <AppShell>
+      <AppPageHeader
+        backHref="/dashboard"
+        title="Teacher modules"
+        lead="Create, edit, publish, and duplicate learning modules. Media uploads go to Cloudflare R2 (or local fallback)."
+      />
         {message && <div className="notice">{message}</div>}
         <form className="panel" onSubmit={onSubmit} style={{ marginBottom: "2rem" }}>
           <h3 style={{ marginTop: 0 }}>{editing ? "Edit module" : "New module"}</h3>
@@ -160,7 +161,6 @@ export default function TeacherModulesPage() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
+    </AppShell>
   );
 }

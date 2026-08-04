@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "German, French, and English language training in Nairobi, Kenya. A branch of St. Francis Technical Institute.",
   openGraph: {
     title: "St. Clare Language Institute",
-    description: "Building Skills. Shaping Futures. — German, French & English in Nairobi.",
+    description: "Building Skills. Shaping Futures. German, French & English in Nairobi.",
     type: "website",
   },
 };

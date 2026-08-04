@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { AboutHero } from "@/components/about/AboutHero";
+import { RiseIn, StaggerChildren, StaggerItem } from "@/components/motion";
 import { aboutContact, aboutContent } from "@/content/about";
 
 export { AboutHero };
@@ -9,10 +12,12 @@ export function AboutStory() {
   return (
     <section className="section">
       <div className="container-page" style={{ maxWidth: 760 }}>
-        <p className="about-kicker">Who we are</p>
-        <h2>{c.storyTitle}</h2>
-        <p className="lead">{c.storyLead}</p>
-        <p style={{ margin: 0, lineHeight: 1.75, color: "var(--ink)", fontSize: "1.05rem" }}>{c.storyBody}</p>
+        <RiseIn>
+          <p className="about-kicker">Who we are</p>
+          <h2>{c.storyTitle}</h2>
+          <p className="lead">{c.storyLead}</p>
+          <p style={{ margin: 0, lineHeight: 1.75, color: "var(--ink)", fontSize: "1.05rem" }}>{c.storyBody}</p>
+        </RiseIn>
       </div>
     </section>
   );
@@ -23,24 +28,24 @@ export function DifferentiatorGrid() {
   return (
     <section className="section" style={{ paddingTop: 0 }}>
       <div className="container-page">
-        <p className="about-kicker">Support beyond the classroom</p>
-        <h2>{c.differentiatorsTitle}</h2>
-        <p className="lead">{c.differentiatorsLead}</p>
-        <div style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+        <RiseIn>
+          <p className="about-kicker">Support beyond the classroom</p>
+          <h2>{c.differentiatorsTitle}</h2>
+          <p className="lead">{c.differentiatorsLead}</p>
+        </RiseIn>
+        <StaggerChildren style={{ display: "grid", gap: "1.25rem", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
           {c.differentiators.map((item, i) => (
-            <article
-              key={item.title}
-              className="about-diff"
-              style={{ animation: `riseIn 0.65s ease ${0.08 * i}s both` }}
-            >
-              <span className="about-diff-index" aria-hidden>
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
+            <StaggerItem key={item.title}>
+              <article className="about-diff">
+                <span className="about-diff-index" aria-hidden>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerChildren>
       </div>
     </section>
   );
@@ -102,21 +107,19 @@ export function PillarsRow() {
         <p className="about-kicker">Values</p>
         <h2>{c.pillarsTitle}</h2>
         <p className="lead">{c.pillarsLead}</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem" }}>
-          {c.pillars.map((p, i) => (
-            <div
-              key={p.title}
-              className="about-pillar"
-              style={{ animation: `riseIn 0.6s ease ${0.1 * i}s both` }}
-            >
-              <div aria-hidden className="about-pillar-icon">
-                {p.title[0]}
+        <StaggerChildren style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem" }}>
+          {c.pillars.map((p) => (
+            <StaggerItem key={p.title}>
+              <div className="about-pillar">
+                <div aria-hidden className="about-pillar-icon">
+                  {p.title[0]}
+                </div>
+                <h3 style={{ margin: "0 0 0.25rem", color: "var(--navy)", fontSize: "1.1rem" }}>{p.title}</h3>
+                <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.95rem" }}>{p.subtitle}</p>
               </div>
-              <h3 style={{ margin: "0 0 0.25rem", color: "var(--navy)", fontSize: "1.1rem" }}>{p.title}</h3>
-              <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.95rem" }}>{p.subtitle}</p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerChildren>
       </div>
     </section>
   );

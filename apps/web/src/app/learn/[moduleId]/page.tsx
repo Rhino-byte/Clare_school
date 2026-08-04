@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiGet, apiSend, type Module } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
+import { AppList, AppListItem, AppPageHeader, AppShell } from "@/components/app/AppShell";
 
 export default function LearnModulePage() {
   const params = useParams<{ moduleId: string }>();
@@ -33,45 +34,47 @@ export default function LearnModulePage() {
 
   if (!module) {
     return (
-      <section className="section">
-        <div className="container-page">{message || "Loading module…"}</div>
-      </section>
+      <AppShell>
+        <div className="skeleton" style={{ height: 28, maxWidth: 240, marginBottom: "1rem" }} />
+        <div className="skeleton" style={{ height: 160 }} />
+        {message && <p>{message}</p>}
+      </AppShell>
     );
   }
 
   return (
-    <section className="section">
-      <div className="container-page" style={{ maxWidth: 800 }}>
-        <Link href="/dashboard">← Dashboard</Link>
-        <h2 style={{ marginTop: "1rem" }}>{module.title}</h2>
-        <p className="lead">{module.summary}</p>
-        <div style={{ display: "grid", gap: "1rem" }}>
+    <AppShell>
+      <div style={{ maxWidth: 800 }}>
+        <AppPageHeader backHref="/dashboard" title={module.title} lead={module.summary} />
+        <AppList>
           {module.content_json.map((block, i) => {
             const type = String(block.type || "");
             const url = block.url ? String(block.url) : "";
             const key = block.key ? String(block.key) : "";
             return (
-              <article key={i} className="panel">
-                {type === "text" ? (
-                  <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{String(block.body || "")}</p>
-                ) : null}
-                {type === "image" && url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: 12 }} />
-                ) : null}
-                {type === "video" && url ? (
-                  <video controls src={url} style={{ width: "100%", borderRadius: 12 }} />
-                ) : null}
-                {type === "audio" && url ? <audio controls src={url} style={{ width: "100%" }} /> : null}
-                {type === "file" && key ? (
-                  <p style={{ margin: 0 }}>
-                    Attachment: <code>{key}</code>
-                  </p>
-                ) : null}
-              </article>
+              <AppListItem key={i}>
+                <article className="panel">
+                  {type === "text" ? (
+                    <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{String(block.body || "")}</p>
+                  ) : null}
+                  {type === "image" && url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={url} alt="" style={{ maxWidth: "100%", borderRadius: 12 }} />
+                  ) : null}
+                  {type === "video" && url ? (
+                    <video controls src={url} style={{ width: "100%", borderRadius: 12 }} />
+                  ) : null}
+                  {type === "audio" && url ? <audio controls src={url} style={{ width: "100%" }} /> : null}
+                  {type === "file" && key ? (
+                    <p style={{ margin: 0 }}>
+                      Attachment: <code>{key}</code>
+                    </p>
+                  ) : null}
+                </article>
+              </AppListItem>
             );
           })}
-        </div>
+        </AppList>
         <div style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <button type="button" className="btn btn-primary" onClick={markComplete}>
             Mark complete
@@ -82,6 +85,6 @@ export default function LearnModulePage() {
         </div>
         {message && <p>{message}</p>}
       </div>
-    </section>
+    </AppShell>
   );
 }

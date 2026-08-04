@@ -4,9 +4,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiGet, type Test } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
+import {
+  AppList,
+  AppListItem,
+  AppPageHeader,
+  AppShell,
+  EmptyState,
+} from "@/components/app/AppShell";
 
 export default function TestsIndexPage() {
-  const [tests, setTests] = useState<Test[]>([]);
+  const [tests, setTests] = useState<Test[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -20,26 +27,32 @@ export default function TestsIndexPage() {
   }, []);
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <Link href="/dashboard">← Dashboard</Link>
-        <h2>Available tests</h2>
-        <p className="lead">Complete quizzes and speaking tasks for your enrolled courses.</p>
-        <div style={{ display: "grid", gap: "0.75rem" }}>
+    <AppShell>
+      <AppPageHeader
+        backHref="/dashboard"
+        title="Available tests"
+        lead="Complete quizzes and speaking tasks for your enrolled courses."
+      />
+      {tests === null ? (
+        <div className="skeleton" style={{ height: 96 }} />
+      ) : (
+        <AppList>
           {tests.map((t) => (
-            <div key={t.id} className="panel" style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
-              <div>
-                <strong>{t.title}</strong>
-                <div style={{ color: "var(--muted)" }}>{t.questions.length} questions</div>
+            <AppListItem key={t.id}>
+              <div className="panel" style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+                <div>
+                  <strong>{t.title}</strong>
+                  <div style={{ color: "var(--muted)" }}>{t.questions.length} questions</div>
+                </div>
+                <Link href={`/tests/${t.id}`} className="btn btn-primary" style={{ padding: "0.45rem 0.9rem" }}>
+                  Start
+                </Link>
               </div>
-              <Link href={`/tests/${t.id}`} className="btn btn-primary" style={{ padding: "0.45rem 0.9rem" }}>
-                Start
-              </Link>
-            </div>
+            </AppListItem>
           ))}
-          {tests.length === 0 && <p>No published tests for your enrolments yet.</p>}
-        </div>
-      </div>
-    </section>
+          {tests.length === 0 && <EmptyState>No published tests for your enrolments yet.</EmptyState>}
+        </AppList>
+      )}
+    </AppShell>
   );
 }

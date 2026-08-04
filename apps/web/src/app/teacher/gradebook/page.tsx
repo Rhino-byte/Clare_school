@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
 import { getIdToken } from "@/lib/firebase";
+import { AppPageHeader, AppPanel, AppShell, EmptyState, StatusChip } from "@/components/app/AppShell";
 
 type Row = {
   submission_id: string;
@@ -15,8 +15,15 @@ type Row = {
   max_score: number | null;
 };
 
+function toneFor(status: string): "neutral" | "ok" | "warn" | "bad" {
+  if (status === "graded" || status === "completed" || status === "passed") return "ok";
+  if (status === "assessing" || status === "pending" || status === "needs_review") return "warn";
+  if (status === "failed" || status === "error") return "bad";
+  return "neutral";
+}
+
 export default function GradebookPage() {
-  const [rows, setRows] = useState<Row[]>([]);
+  const [rows, setRows] = useState<Row[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -30,12 +37,18 @@ export default function GradebookPage() {
   }, []);
 
   return (
-    <section className="section">
-      <div className="container-page">
-        <Link href="/dashboard">← Dashboard</Link>
-        <h2>Gradebook</h2>
-        <p className="lead">Results per student submission across published assessments.</p>
-        <div className="panel" style={{ overflowX: "auto" }}>
+    <AppShell>
+      <AppPageHeader
+        backHref="/dashboard"
+        title="Gradebook"
+        lead="Results per student submission across published assessments."
+      />
+      {rows === null ? (
+        <div className="skeleton" style={{ height: 160 }} />
+      ) : rows.length === 0 ? (
+        <EmptyState>No submissions yet.</EmptyState>
+      ) : (
+        <AppPanel style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ textAlign: "left", borderBottom: "1px solid rgba(11,31,58,0.15)" }}>
@@ -54,7 +67,7 @@ export default function GradebookPage() {
                   </td>
                   <td style={{ padding: "0.5rem" }}>{r.test_title}</td>
                   <td style={{ padding: "0.5rem" }}>
-                    <span className="level-badge">{r.status}</span>
+                    <StatusChip tone={toneFor(r.status)}>{r.status}</StatusChip>
                   </td>
                   <td style={{ padding: "0.5rem" }}>
                     {r.score != null ? `${r.score}/${r.max_score}` : "—"}
@@ -63,8 +76,8 @@ export default function GradebookPage() {
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-    </section>
+        </AppPanel>
+      )}
+    </AppShell>
   );
 }
